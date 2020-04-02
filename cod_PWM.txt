@@ -1,0 +1,61 @@
+void seriala(){
+  UCSR0C = (1 << UCSZ00) | (1 << UCSZ01); //setam numarul de biti al caracterelor 
+  UCSR0B = (1 << RXEN0) | (1 << TXEN0); //activam receptia si transmisia
+  UCSR0A = (1 << UDRE0); //registrul e gol si poate fi scrisa
+  UBRR0 = 103; //viteza de transmisie pentru comunicatia seriala 9600
+}
+
+void setup() {
+  seriala();
+  pwm();
+}
+
+void serialSend(unsigned char data) {
+  while(!(UCSR0A & (1<<UDRE0))); //registrul de transmisie este pregatit pentru o noua incarcare
+  UDR0 = data; //inscriem data in registru
+}
+
+unsigned char serialRecieve() {
+  if(UCSR0A & (1<<RXC0)) //registrul de receptie nu contine date - il punem pe 1 - primeste date
+    return UDR0;
+  else
+    return 0;
+}
+
+String inString = "";
+void serialLed() {
+  int inChar = serialRecieve();
+    if (isDigit(inChar)) {
+      // va converti urmatorul byte in char si il va adauga in string
+      inString += (char)inChar;
+    }
+    if(inChar == ' '){
+      OCR0A=inString.toInt();
+      inString="";
+    }
+    else if(inChar == '\n'){
+      OCR0B=inString.toInt();
+      inString="";
+    }
+}
+
+
+void loop() {
+  
+  serialLed();
+}
+
+
+void pwm(){
+  cli();
+  DDRD=B01100000;
+  TCCR0A=0;
+  TCCR0B=0;
+  TCCR0A|=(1<<WGM01)|(1<<WGM00); //fast pwm intrerupere la val max
+  TCCR0A|=(1<<COM0A1)|(1<<COM0B1);//schimba valoarea OC0A la comparare
+  TCCR0B|=(1<<CS01); //prescaler 8
+  OCR0A=0;
+  OCR0B=0;//setam OCR-ul 
+  sei(); //intrerupere 
+}
+//Verificarea semnalului PWM se va face cu un LED conectat la canalele A și B ale timerului ales.
