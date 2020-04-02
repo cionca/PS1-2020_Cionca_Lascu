@@ -1,4 +1,4 @@
-void seriala(){
+﻿void seriala(){
   UCSR0C = (1 << UCSZ00) | (1 << UCSZ01); //setam numarul de biti al caracterelor 
   UCSR0B = (1 << RXEN0) | (1 << TXEN0); //activam receptia si transmisia
   UCSR0A = (1 << UDRE0); //registrul e gol si poate fi scrisa
